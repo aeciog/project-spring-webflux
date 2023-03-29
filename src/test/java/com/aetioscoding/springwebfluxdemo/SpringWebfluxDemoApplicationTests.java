@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SpringWebfluxDemoApplicationTests {
 
@@ -50,6 +52,28 @@ class SpringWebfluxDemoApplicationTests {
 				.jsonPath("$.email").isEqualTo(employeeDto.getEmail());
 
 
+	}
+
+	@Test
+	public void testGetSingleEmployee(){
+
+
+		EmployeeDto employeeDto = new EmployeeDto();
+		employeeDto.setFirstName("Aécio");
+		employeeDto.setLastName("Barros");
+		employeeDto.setEmail("aeciob.guterres@gmail.com");
+
+		EmployeeDto savedEmployee = employeeService.saveEmployee(employeeDto).block();
+
+		webTestClient.get().uri("/api/employees/{id}", Collections.singletonMap("id",savedEmployee.getId()))
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody()
+				.consumeWith(System.out::println)
+				.jsonPath("$.id").isEqualTo(savedEmployee.getId())
+				.jsonPath("$.firstName").isEqualTo(employeeDto.getFirstName())
+				.jsonPath("$.lastName").isEqualTo(employeeDto.getLastName())
+				.jsonPath("$.email").isEqualTo(employeeDto.getEmail());
 	}
 
 }
